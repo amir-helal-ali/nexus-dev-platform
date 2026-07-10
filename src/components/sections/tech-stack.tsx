@@ -1,58 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Atom, Database, Boxes, Cloud, GitBranch, Cpu, Layers, Server,
-  Shield, Zap, Terminal, Workflow
-} from "lucide-react";
-
-const TECH_GROUPS = [
-  {
-    title: "الفرونت إند",
-    icon: Layers,
-    color: "text-emerald-400",
-    items: ["Next.js 16", "React 19", "TypeScript", "TailwindCSS 4", "shadcn/ui", "Framer Motion"],
-  },
-  {
-    title: "الموبايل",
-    icon: Atom,
-    color: "text-sky-400",
-    items: ["React Native", "Expo", "Reanimated", "Swift / Kotlin", "Notifications", "In-App Purchase"],
-  },
-  {
-    title: "الباك إند",
-    icon: Server,
-    color: "text-violet-400",
-    items: ["Node.js / Bun", "tRPC / GraphQL", "Prisma ORM", "Redis", "BullMQ", "WebSockets"],
-  },
-  {
-    title: "قواعد البيانات",
-    icon: Database,
-    color: "text-amber-400",
-    items: ["PostgreSQL", "MongoDB", "MySQL", "Supabase", "PlanetScale", "Elasticsearch"],
-  },
-  {
-    title: "DevOps والسحابة",
-    icon: Cloud,
-    color: "text-pink-400",
-    items: ["AWS", "Vercel", "Docker", "Kubernetes", "Cloudflare", "Terraform"],
-  },
-  {
-    title: "الأمان والأداء",
-    icon: Shield,
-    color: "text-teal-400",
-    items: ["OWASP", "JWT / OAuth2", "Rate Limiting", "CSP", "Sentry", "Lighthouse 100"],
-  },
-];
-
-const EXTRAS = [
-  { icon: GitBranch, label: "Git Workflow" },
-  { icon: Cpu, label: "Edge Computing" },
-  { icon: Boxes, label: "Microservices" },
-  { icon: Workflow, label: "CI/CD Pipelines" },
-  { icon: Terminal, label: "CLI Tooling" },
-  { icon: Zap, label: "Real-time Apps" },
-];
+import { TECH_GROUPS, TECH_EXTRAS } from "@/lib/data/content";
 
 export default function TechStack() {
   return (
@@ -91,7 +40,7 @@ export default function TechStack() {
             >
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform">
-                  <group.icon className={`h-5.5 w-5.5 ${group.color}`} />
+                  <group.icon className={`h-5 w-5 ${group.color}`} />
                 </div>
                 <h3 className="text-lg font-bold">{group.title}</h3>
               </div>
@@ -117,7 +66,7 @@ export default function TechStack() {
           transition={{ delay: 0.3 }}
           className="mt-10 flex flex-wrap justify-center gap-3"
         >
-          {EXTRAS.map((extra) => (
+          {TECH_EXTRAS.map((extra) => (
             <div
               key={extra.label}
               className="flex items-center gap-2 px-4 py-2.5 glass rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

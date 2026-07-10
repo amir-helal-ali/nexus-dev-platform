@@ -11,7 +11,6 @@ import Testimonials from "@/components/sections/testimonials";
 import Pricing from "@/components/sections/pricing";
 import FAQ from "@/components/sections/faq";
 import CTA from "@/components/sections/cta";
-import Contact from "@/components/sections/contact";
 
 export default function Home() {
   return (
@@ -28,16 +27,15 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <Stats />
-        <Services />
-        <Templates />
+        <Services compact limit={3} />
+        <Templates compact limit={3} />
         <TechStack />
         <Process />
-        <Portfolio />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
+        <Portfolio compact limit={4} />
+        <Testimonials compact limit={3} />
+        <Pricing compact />
+        <FAQ limit={6} />
         <CTA />
-        <Contact />
       </main>
 
       <Footer />

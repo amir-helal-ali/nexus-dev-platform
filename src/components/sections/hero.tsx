@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpLeft, Play, Sparkles, Code2, Smartphone, Server } from "lucide-react";
+import { ArrowUpLeft, Play, Sparkles, Code2, Smartphone, Server, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Hero() {
@@ -37,7 +38,7 @@ export default function Hero() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </span>
-              <span className="text-muted-foreground">متاحون لمشاريع جديدة · ربع 2026</span>
+              <span className="text-muted-foreground">شركة مصرية · متاحون لمشاريع جديدة</span>
               <Sparkles className="h-3.5 w-3.5 text-primary" />
             </motion.div>
 
@@ -45,15 +46,16 @@ export default function Hero() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1]">
               نبني البرمجيات
               <br />
-              <span className="text-gradient-primary">التي تُحرّك أعمالك</span>
+              <span className="text-gradient-primary">التي تُحرّك أعمالك في مصر</span>
               <br />
               <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl text-muted-foreground font-bold">بمعايير هندسية عالمية</span>
             </h1>
 
             {/* Sub */}
             <p className="mt-6 text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mr-0 leading-relaxed">
-              نكسوس ديف شركة هندسة برمجيات متخصصة في تطوير تطبيقات الويب والجوال،
-              وتوفير قوالب أكواد جاهزة باك إند وفرونت إند بمستوى إنتاجي قابل للتوسّع فوراً.
+              شركة هندسة برمجيات مصرية متخصصة في تطوير تطبيقات الويب والجوال، وتوفير قوالب
+              أكواد جاهزة باك إند وفرونت إند بمستوى إنتاجي قابل للتوسّع — مع دعم كامل لطرق
+              الدفع المصرية: فودافون كاش، إنستاباي، فوري.
             </p>
 
             {/* CTAs */}
@@ -63,10 +65,10 @@ export default function Hero() {
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-2 shadow-xl shadow-primary/25 h-12 px-7 text-base"
               >
-                <a href="#contact">
+                <Link href="/contact">
                   ابدأ مشروعك الآن
                   <ArrowUpLeft className="h-5 w-5" />
-                </a>
+                </Link>
               </Button>
               <Button
                 asChild
@@ -74,15 +76,19 @@ export default function Hero() {
                 variant="outline"
                 className="font-semibold rounded-xl gap-2 h-12 px-7 text-base border-white/15 bg-white/5 hover:bg-white/10 backdrop-blur"
               >
-                <a href="#templates">
+                <Link href="/templates">
                   <Play className="h-4 w-4" />
                   شاهد القوالب الجاهزة
-                </a>
+                </Link>
               </Button>
             </div>
 
             {/* Trust line */}
             <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span>القاهرة · مصر 🇪🇬</span>
+              </div>
               <div className="flex items-center gap-2">
                 <Code2 className="h-4 w-4 text-primary" />
                 <span>+8 سنوات خبرة</span>
@@ -93,7 +99,7 @@ export default function Hero() {
               </div>
               <div className="flex items-center gap-2">
                 <Server className="h-4 w-4 text-primary" />
-                <span>+45 قالب جاهز</span>
+                <span>فاتورة ضريبية رسمية</span>
               </div>
             </div>
           </motion.div>
@@ -138,18 +144,18 @@ export default function Hero() {
               {/* Code body */}
               <div dir="ltr" className="p-5 font-mono text-[13px] leading-relaxed bg-[oklch(0.06_0.01_250)] text-left overflow-x-auto">
                 <pre className="text-muted-foreground">
-<span className="text-pink-400">import</span> {"{ nexus }"} <span className="text-pink-400">from</span> <span className="text-emerald-300">"@nexus/core"</span>;{"\n"}
+<span className="text-pink-400">import</span> {"{ nexus }"} <span className="text-pink-400">from</span> <span className="text-emerald-300">"@nexus/eg"</span>;{"\n"}
 {"\n"}
-<span className="text-pink-400">const</span> <span className="text-sky-300">config</span> = <span className="text-yellow-300">nexus</span>.{"\n"}
+<span className="text-pink-400">const</span> <span className="text-sky-300">app</span> = <span className="text-yellow-300">nexus</span>.{"\n"}
   <span className="text-violet-300">defineApp</span>({"{"}{"\n"}
     <span className="text-sky-300">stack</span>: [<span className="text-emerald-300">"Next.js"</span>, <span className="text-emerald-300">"React Native"</span>],{"\n"}
-    <span className="text-sky-300">backend</span>: [<span className="text-emerald-300">"Node"</span>, <span className="text-emerald-300">"Prisma"</span>, <span className="text-emerald-300">"Redis"</span>],{"\n"}
+    <span className="text-sky-300">payment</span>: [<span className="text-emerald-300">"PayMob"</span>, <span className="text-emerald-300">"Fawry"</span>, <span className="text-emerald-300">"Vodafone Cash"</span>],{"\n"}
+    <span className="text-sky-300">currency</span>: <span className="text-emerald-300">"EGP"</span>,{"\n"}
     <span className="text-sky-300">scale</span>: <span className="text-emerald-300">"enterprise"</span>,{"\n"}
-    <span className="text-sky-300">delivery</span>: <span className="text-emerald-300">"continuous"</span>,{"\n"}
     <span className="text-sky-300">quality</span>: <span className="text-emerald-300">"100/100"</span>,{"\n"}
   {"}"});{"\n"}
 {"\n"}
-<span className="text-pink-400">export default</span> <span className="text-sky-300">config</span>;<span className="cursor-blink text-primary">▋</span>
+<span className="text-pink-400">export default</span> <span className="text-sky-300">app</span>;<span className="cursor-blink text-primary">▋</span>
                 </pre>
               </div>
 
@@ -200,5 +206,5 @@ export default function Hero() {
 const TECH_MARQUEE = [
   "Next.js", "React", "TypeScript", "Node.js", "Prisma", "PostgreSQL",
   "React Native", "Expo", "TailwindCSS", "Docker", "Kubernetes", "AWS",
-  "Vercel", "GraphQL", "Redis", "MongoDB", "tRPC", "Stripe",
+  "Vercel", "GraphQL", "Redis", "MongoDB", "tRPC", "PayMob",
 ];

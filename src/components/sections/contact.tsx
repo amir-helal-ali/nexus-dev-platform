@@ -2,21 +2,26 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, MessageSquare, Github, Twitter, Linkedin, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { COMPANY } from "@/lib/data/content";
 
-export default function Contact() {
+interface ContactProps {
+  /** إذا true، يعرض القسم بكامل تفاصيله. إذا false، يعرضه بشكل مختصر */
+  full?: boolean;
+}
+
+export default function Contact({ full = false }: ContactProps) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
-    // Simulate API call
     await new Promise((r) => setTimeout(r, 1400));
     setSubmitting(false);
     setDone(true);
@@ -29,7 +34,6 @@ export default function Contact() {
 
   return (
     <section id="contact" className="relative py-20 lg:py-28 overflow-hidden">
-      {/* Background glow */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/15 rounded-full blur-[120px]" />
       </div>
@@ -61,23 +65,23 @@ export default function Contact() {
 
             {/* Contact methods */}
             <div className="space-y-3">
-              <a href="mailto:hello@nexusdev.io" className="flex items-center gap-4 p-4 glass rounded-xl hover:border-primary/30 transition-colors group">
+              <a href={`mailto:${COMPANY.email}`} className="flex items-center gap-4 p-4 glass rounded-xl hover:border-primary/30 transition-colors group">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 group-hover:scale-110 transition-transform">
                   <Mail className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">البريد الإلكتروني</div>
-                  <div className="text-sm font-semibold">hello@nexusdev.io</div>
+                  <div className="text-sm font-semibold">{COMPANY.email}</div>
                 </div>
               </a>
 
-              <a href="tel:+966500000000" className="flex items-center gap-4 p-4 glass rounded-xl hover:border-primary/30 transition-colors group">
+              <a href={`tel:${COMPANY.phoneEG.replace(/\s/g, "")}`} className="flex items-center gap-4 p-4 glass rounded-xl hover:border-primary/30 transition-colors group" dir="ltr">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 group-hover:scale-110 transition-transform">
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="text-right">
                   <div className="text-xs text-muted-foreground">هاتف · واتساب</div>
-                  <div className="text-sm font-semibold" dir="ltr">+966 50 000 0000</div>
+                  <div className="text-sm font-semibold">{COMPANY.phoneEG}</div>
                 </div>
               </a>
 
@@ -86,8 +90,9 @@ export default function Contact() {
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">المقر</div>
-                  <div className="text-sm font-semibold">الرياض · دبي · عن بُعد عالمياً</div>
+                  <div className="text-xs text-muted-foreground">العنوان · ساعات العمل</div>
+                  <div className="text-sm font-semibold">{COMPANY.addressShort}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">{COMPANY.workingHours}</div>
                 </div>
               </div>
             </div>
@@ -96,14 +101,13 @@ export default function Contact() {
             <div className="flex items-center gap-3 pt-2">
               <span className="text-sm text-muted-foreground">تابعنا:</span>
               {[
-                { icon: Github, label: "GitHub" },
-                { icon: Twitter, label: "Twitter" },
-                { icon: Linkedin, label: "LinkedIn" },
-                { icon: MessageSquare, label: "Discord" },
+                { icon: MessageSquare, label: "WhatsApp", href: `https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}` },
+                { icon: Mail, label: "Email", href: `mailto:${COMPANY.email}` },
+                { icon: Phone, label: "Call", href: `tel:${COMPANY.phoneEG.replace(/\s/g, "")}` },
               ].map((s) => (
                 <a
                   key={s.label}
-                  href="#"
+                  href={s.href}
                   aria-label={s.label}
                   className="flex h-9 w-9 items-center justify-center rounded-lg glass hover:border-primary/30 hover:text-primary transition-colors"
                 >
@@ -135,7 +139,7 @@ export default function Contact() {
                       id="name"
                       name="name"
                       required
-                      placeholder="محمد العبدالله"
+                      placeholder="محمد عبدالله"
                       className="bg-white/5 border-white/10 rounded-xl h-11"
                     />
                   </div>
@@ -155,29 +159,50 @@ export default function Contact() {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="company" className="text-xs font-semibold">الشركة (اختياري)</Label>
+                    <Label htmlFor="phone" className="text-xs font-semibold">رقم الهاتف (مصري)</Label>
                     <Input
-                      id="company"
-                      name="company"
-                      placeholder="اسم الشركة"
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      placeholder="0100 123 4567"
                       className="bg-white/5 border-white/10 rounded-xl h-11"
+                      dir="ltr"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="budget" className="text-xs font-semibold">الميزانية التقريبية</Label>
+                    <Label htmlFor="budget" className="text-xs font-semibold">الميزانية التقريبية (ج.م)</Label>
                     <select
                       id="budget"
                       name="budget"
                       className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="" className="bg-card">اختر النطاق</option>
-                      <option value="lt2k" className="bg-card">أقل من $2,000</option>
-                      <option value="2-5k" className="bg-card">$2,000 - $5,000</option>
-                      <option value="5-15k" className="bg-card">$5,000 - $15,000</option>
-                      <option value="15-50k" className="bg-card">$15,000 - $50,000</option>
-                      <option value="gt50k" className="bg-card">أكثر من $50,000</option>
+                      <option value="lt60k" className="bg-card">أقل من 60,000</option>
+                      <option value="60-150k" className="bg-card">60,000 - 150,000</option>
+                      <option value="150-500k" className="bg-card">150,000 - 500,000</option>
+                      <option value="gt500k" className="bg-card">أكثر من 500,000</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="service" className="text-xs font-semibold">نوع الخدمة المطلوبة</Label>
+                  <select
+                    id="service"
+                    name="service"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    <option value="" className="bg-card">اختر الخدمة</option>
+                    <option value="web" className="bg-card">تطوير ويب</option>
+                    <option value="mobile" className="bg-card">تطبيق موبايل</option>
+                    <option value="ecommerce" className="bg-card">متجر إلكتروني</option>
+                    <option value="devops" className="bg-card">DevOps</option>
+                    <option value="design" className="bg-card">تصميم UI/UX</option>
+                    <option value="security" className="bg-card">تدقيق أمني</option>
+                    <option value="template" className="bg-card">شراء قالب جاهز</option>
+                    <option value="other" className="bg-card">أخرى</option>
+                  </select>
                 </div>
 
                 <div className="space-y-1.5">

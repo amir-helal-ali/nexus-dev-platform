@@ -1,79 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Sparkles, Rocket, Building2, ArrowUpLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PLANS, formatEGP } from "@/lib/data/content";
 
-const PLANS = [
-  {
-    icon: Rocket,
-    name: "Starter",
-    tagline: "للمشاريع الناشئة وMVP",
-    price: 1900,
-    period: "/ مشروع",
-    color: "from-sky-500/15 to-sky-500/5",
-    accent: "text-sky-400",
-    border: "border-white/10",
-    features: [
-      "تطبيق ويب حتى 8 صفحات",
-      "تصميم UI/UX احترافي",
-      "Backend + قاعدة بيانات",
-      "مصادقة + لوحة تحكم",
-      "نشر على Vercel/Render",
-      "30 يوم دعم فني",
-      "كود مصدري كامل",
-    ],
-    excluded: ["تطبيق موبايل", "DevOps مخصص", "صيانة شهرية"],
-  },
-  {
-    icon: Building2,
-    name: "Growth",
-    tagline: "الأكثر اختياراً للشركات",
-    price: 4900,
-    period: "/ مشروع",
-    color: "from-primary/20 to-primary/5",
-    accent: "text-primary",
-    border: "border-primary/40",
-    popular: true,
-    features: [
-      "تطبيق ويب كامل + API",
-      "تطبيق موبايل (iOS/Android)",
-      "تصميم UX متقدم + Design System",
-      "Backend متعدد الخدمات",
-      "دمج بوابات دفع + Stripe",
-      "نشر سحابي + CI/CD",
-      "اختبارات E2E شاملة",
-      "90 يوم دعم فني",
-      "文档 كامل + تدريب",
-    ],
-    excluded: ["بنية K8s مخصصة"],
-  },
-  {
-    icon: Sparkles,
-    name: "Enterprise",
-    tagline: "للحلول الكبيرة والمعقدة",
-    price: "حسب الطلب",
-    period: "",
-    color: "from-violet-500/15 to-violet-500/5",
-    accent: "text-violet-400",
-    border: "border-white/10",
-    features: [
-      "حلول مخصصة بالكامل",
-      "بنية Microservices + K8s",
-      "تكامل أنظمة Legacy",
-      "أمان + OWASP Audit",
-      "SLA 99.99% uptime",
-      "فريق مخصص مخصص",
-      "صيانة شهرية مستمرة",
-      "استشارات استراتيجية",
-      "دعم 24/7 أولوية",
-    ],
-    excluded: [],
-  },
-];
+interface PricingProps {
+  compact?: boolean;
+}
 
-export default function Pricing() {
+export default function Pricing({ compact = false }: PricingProps) {
   return (
     <section id="pricing" className="relative py-20 lg:py-28">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
@@ -93,14 +31,14 @@ export default function Pricing() {
           </h2>
           <p className="mt-5 text-base lg:text-lg text-muted-foreground leading-relaxed">
             اختر الباقة التي تناسب مرحلة مشروعك. كل باقة قابلة للتخصيص حسب احتياجك،
-            مع ضمان الجودة والدعم بعد التسليم.
+            مع ضمان الجودة والدعم بعد التسليم. الأسعار بالجنيه المصري وتشمل فاتورة ضريبية رسمية.
           </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-6 items-start">
           {PLANS.map((plan, i) => (
             <motion.div
-              key={plan.name}
+              key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -125,26 +63,26 @@ export default function Pricing() {
               <p className="text-sm text-muted-foreground mb-5">{plan.tagline}</p>
 
               <div className="flex items-baseline gap-1 mb-6 pb-6 border-b border-white/8">
-                {typeof plan.price === "number" ? (
+                {plan.price > 0 ? (
                   <>
-                    <span className="text-4xl font-extrabold">${plan.price.toLocaleString()}</span>
-                    <span className="text-sm text-muted-foreground">{plan.period}</span>
+                    <span className="text-4xl font-extrabold">{formatEGP(plan.price)}</span>
+                    <span className="text-sm text-muted-foreground">ج.م {plan.period}</span>
                   </>
                 ) : (
-                  <span className="text-3xl font-extrabold">{plan.price}</span>
+                  <span className="text-3xl font-extrabold">حسب الطلب</span>
                 )}
               </div>
 
               <ul className="space-y-3 mb-7">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <Check className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span className="text-foreground/90">{f}</span>
                   </li>
                 ))}
                 {plan.excluded.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-muted-foreground/60 line-through">
-                    <span className="h-4.5 w-4.5 shrink-0 mt-0.5">—</span>
+                    <span className="h-4 w-4 shrink-0 mt-0.5">—</span>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -159,18 +97,29 @@ export default function Pricing() {
                     : "bg-white/5 hover:bg-white/10 text-foreground border border-white/10"
                 )}
               >
-                <a href="#contact">
+                <Link href="/contact">
                   ابدأ الآن
                   <ArrowUpLeft className="h-4 w-4" />
-                </a>
+                </Link>
               </Button>
             </motion.div>
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          جميع الباقات تشمل: كود مصدري نظيف · توثيق فني · حقوق ملكية كاملة · ضمان رضا 100%
-        </p>
+        {!compact && (
+          <div className="mt-10 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              جميع الباقات تشمل: كود مصدري نظيف · توثيق فني · حقوق ملكية كاملة · ضمان رضا 100% · فاتورة ضريبية رسمية
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8">💳 فودافون كاش</span>
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8">⚡ إنستاباي</span>
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8">🏪 فوري</span>
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8">🏦 تحويل بنكي</span>
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8">💎 فيزا/ماستركارد</span>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -2,14 +2,7 @@
 
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { Users, FolderGit2, Code2, Award } from "lucide-react";
-
-const STATS = [
-  { icon: Users, value: 87, suffix: "+", label: "عميل حول العالم", color: "text-emerald-400" },
-  { icon: FolderGit2, value: 124, suffix: "", label: "مشروع منجز بنجاح", color: "text-sky-400" },
-  { icon: Code2, value: 45, suffix: "+", label: "قالب جاهز للبيع", color: "text-violet-400" },
-  { icon: Award, value: 99, suffix: "%", label: "نسبة رضا العملاء", color: "text-amber-400" },
-];
+import { STATS } from "@/lib/data/content";
 
 function Counter({ value, suffix }: { value: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement>(null);

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,12 +52,12 @@ export default function CTA() {
               <Button
                 asChild
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-2 shadow-xl shadow-primary/25 h-13 px-8 text-base h-12"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-2 shadow-xl shadow-primary/25 h-12 px-8 text-base"
               >
-                <a href="#contact">
+                <Link href="/contact">
                   <Calendar className="h-5 w-5" />
                   احجز جلسة مجانية
-                </a>
+                </Link>
               </Button>
               <Button
                 asChild
@@ -64,10 +65,10 @@ export default function CTA() {
                 variant="outline"
                 className="font-semibold rounded-xl gap-2 h-12 px-8 text-base border-white/15 bg-white/5 hover:bg-white/10"
               >
-                <a href="#templates">
+                <Link href="/templates">
                   تصفح القوالب أولاً
                   <ArrowUpLeft className="h-4 w-4" />
-                </a>
+                </Link>
               </Button>
             </div>
 
@@ -83,6 +84,10 @@ export default function CTA() {
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 سرية تامة (NDA)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                🇪🇬 مكتب في القاهرة
               </span>
             </div>
           </div>

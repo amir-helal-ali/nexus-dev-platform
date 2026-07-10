@@ -1,23 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Terminal, ArrowUpLeft } from "lucide-react";
+import { Menu, X, Terminal, ArrowUpLeft, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-  { label: "الخدمات", href: "#services" },
-  { label: "القوالب", href: "#templates" },
-  { label: "منهجيتنا", href: "#process" },
-  { label: "أعمالنا", href: "#portfolio" },
-  { label: "الباقات", href: "#pricing" },
-  { label: "آراء العملاء", href: "#testimonials" },
-];
+import { NAV_LINKS, COMPANY } from "@/lib/data/content";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -25,6 +20,17 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    if (!open) return;
+    // Close when pathname changes (navigation occurred)
+    const timeout = setTimeout(() => setOpen(false), 0);
+    return () => clearTimeout(timeout);
+  }, [pathname, open]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <header
@@ -41,7 +47,7 @@ export default function Navbar() {
           )}
         >
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/30 blur-md group-hover:bg-primary/50 transition-colors" />
               <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/90 to-primary/60 border border-primary/40">
@@ -50,39 +56,52 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-base font-extrabold tracking-tight">NEXUS<span className="text-primary">DEV</span></span>
-              <span className="text-[10px] text-muted-foreground font-medium tracking-widest">SOFTWARE ENGINEERING</span>
+              <span className="text-[10px] text-muted-foreground font-medium tracking-widest">{COMPANY.taglineEn}</span>
             </div>
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
-                className="relative px-3.5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-white/5"
+                className={cn(
+                  "relative px-3.5 py-2 text-sm font-medium transition-colors rounded-lg",
+                  isActive(link.href)
+                    ? "text-foreground bg-white/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                )}
               >
                 {link.label}
-              </a>
+                {isActive(link.href) && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute bottom-0 right-1/2 translate-x-1/2 h-0.5 w-6 bg-primary rounded-full"
+                  />
+                )}
+              </Link>
             ))}
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
             <a
-              href="#contact"
-              className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              href={`tel:${COMPANY.phoneEG.replace(/\s/g, "")}`}
+              className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              dir="ltr"
             >
-              تواصل معنا
+              <Phone className="h-3.5 w-3.5" />
+              {COMPANY.phoneEG}
             </a>
             <Button
               asChild
               size="sm"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-1.5 shadow-lg shadow-primary/20"
             >
-              <a href="#templates">
-                تصفح القوالب
+              <Link href="/contact">
+                ابدأ مشروعك
                 <ArrowUpLeft className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
           </div>
 
@@ -108,21 +127,34 @@ export default function Navbar() {
             >
               <div className="flex flex-col p-3 gap-1">
                 {NAV_LINKS.map((link) => (
-                  <a
+                  <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl transition-colors"
+                    className={cn(
+                      "px-4 py-3 text-sm font-medium rounded-xl transition-colors",
+                      isActive(link.href)
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                    )}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
-                <a
-                  href="#contact"
+                <Link
+                  href="/contact"
                   onClick={() => setOpen(false)}
                   className="mt-2 px-4 py-3 text-sm font-semibold bg-primary text-primary-foreground rounded-xl text-center"
                 >
                   ابدأ مشروعك الآن
+                </Link>
+                <a
+                  href={`tel:${COMPANY.phoneEG.replace(/\s/g, "")}`}
+                  className="mt-1 px-4 py-3 text-sm text-muted-foreground text-center flex items-center justify-center gap-2"
+                  dir="ltr"
+                >
+                  <Phone className="h-4 w-4" />
+                  {COMPANY.phoneEG}
                 </a>
               </div>
             </motion.div>

@@ -1,45 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, PenTool, Code2, Rocket, RefreshCw } from "lucide-react";
-
-const STEPS = [
-  {
-    n: "01",
-    icon: Search,
-    title: "اكتشاف وتحليل",
-    desc: "نجلس معك، نفهم أهدافك، نحلل السوق والمنافسين، ونرسم خريطة متطلبات دقيقة لوظائف المنتج وتجربة المستخدم.",
-    deliverables: ["PRD تفصيلي", "تحليل المنافسين", "خارطة المستخدم"],
-  },
-  {
-    n: "02",
-    icon: PenTool,
-    title: "تصميم واجهات ونماذج",
-    desc: "نصمم تجربة المستخدم بصرياً عبر Figma، مع Design System متكامل ونماذج تفاعلية تتيح لك رؤية المنتج قبل كتابة سطر واحد.",
-    deliverables: ["UI/UX في Figma", "Design System", "Prototype تفاعلي"],
-  },
-  {
-    n: "03",
-    icon: Code2,
-    title: "تطوير واختبار",
-    desc: "نكتب الكود بمعايير الإنتاج — Clean Code, TypeScript, اختبارات وحدة وتكامل، مع مراجعة كود ومراحل CI/CD آلية.",
-    deliverables: ["Codebase نظيف", "Unit + E2E Tests", "Daily builds"],
-  },
-  {
-    n: "04",
-    icon: Rocket,
-    title: "إطلاق ونشر",
-    desc: "ننشر المنتج على البنية التحتية السحابية المناسبة، نضبط DNS/SSL/CDN، ونضمن جاهزية الإنتاج بأعلى معايير الأمان والأداء.",
-    deliverables: ["Deployment كامل", "Domain + SSL", "Performance audit"],
-  },
-  {
-    n: "05",
-    icon: RefreshCw,
-    title: "صيانة وتطوير مستمر",
-    desc: "نراقب الأداء، نصلح الأعطال، نطلق تحسينات دورية، ونضيف ميزات جديدة بناءً على ملاحظات مستخدميك ومؤشرات النمو.",
-    deliverables: ["Monitoring 24/7", "تحديثات دورية", "دعم فني مباشر"],
-  },
-];
+import { PROCESS_STEPS } from "@/lib/data/content";
 
 export default function Process() {
   return (
@@ -72,7 +34,7 @@ export default function Process() {
           <div className="hidden lg:block absolute top-1/2 right-0 left-0 h-px bg-gradient-to-l from-transparent via-white/15 to-transparent -translate-y-1/2" />
 
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-3">
-            {STEPS.map((step, i) => (
+            {PROCESS_STEPS.map((step, i) => (
               <motion.div
                 key={step.n}
                 initial={{ opacity: 0, y: 30 }}

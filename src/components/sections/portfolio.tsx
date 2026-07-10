@@ -1,60 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpLeft, TrendingUp, Users, Clock } from "lucide-react";
+import { PROJECTS } from "@/lib/data/content";
 
-const PROJECTS = [
-  {
-    name: "FinFlow Banking",
-    category: "Fintech / ويب",
-    desc: "منصة مصرفية رقمية متكاملة، محفظة، تحويلات فورية، بطاقات افتراضية، ولوحة تحكم تحليلية.",
-    metrics: [
-      { icon: Users, value: "+250K", label: "مستخدم نشط" },
-      { icon: TrendingUp, value: "+340%", label: "نمو الإيرادات" },
-      { icon: Clock, value: "1.2s", label: "زمن الاستجابة" },
-    ],
-    gradient: "from-emerald-500/40 via-teal-500/30 to-cyan-500/40",
-    tags: ["Next.js", "Prisma", "PostgreSQL", "Stripe"],
-  },
-  {
-    name: "MedBook Care",
-    category: "Healthcare / موبايل",
-    desc: "تطبيق حجز مواعيد عيادات، استشارات فيديو، ملفات طبية إلكترونية، وتذكيرات ذكية للمريض.",
-    metrics: [
-      { icon: Users, value: "+80K", label: "تنزيل" },
-      { icon: TrendingUp, value: "4.9★", label: "تقييم المتجر" },
-      { icon: Clock, value: "2 أسابيع", label: "للنسخة الأولى" },
-    ],
-    gradient: "from-sky-500/40 via-blue-500/30 to-indigo-500/40",
-    tags: ["React Native", "Expo", "tRPC", "WebRTC"],
-  },
-  {
-    name: "ShopSphere",
-    category: "E-commerce / ويب",
-    desc: "سوق متعدد البائعين بأكثر من 12 ألف منتج، نظام ولاء، فيد لا نهائي، وتجربة شراء سلسة.",
-    metrics: [
-      { icon: Users, value: "+500K", label: "زائر شهرياً" },
-      { icon: TrendingUp, value: "+187%", label: "معدل التحويل" },
-      { icon: Clock, value: "0.8s", label: "LCP" },
-    ],
-    gradient: "from-violet-500/40 via-purple-500/30 to-fuchsia-500/40",
-    tags: ["Next.js", "Redis", "Elasticsearch", "Stripe"],
-  },
-  {
-    name: "LearnHub LMS",
-    category: "EdTech / Full Stack",
-    desc: "منصة تعلّم إلكتروني بمئات الكورسات، اختبارات تفاعلية، شهادات مكتملة، وتتبع تقدّم حي.",
-    metrics: [
-      { icon: Users, value: "+120K", label: "طالب" },
-      { icon: TrendingUp, value: "+95%", label: "إكمال الكورسات" },
-      { icon: Clock, value: "5 أيام", label: "MVP" },
-    ],
-    gradient: "from-amber-500/40 via-orange-500/30 to-red-500/40",
-    tags: ["Next.js", "Bun", "PostgreSQL", "Mux"],
-  },
-];
+interface PortfolioProps {
+  compact?: boolean;
+  limit?: number;
+}
 
-export default function Portfolio() {
+export default function Portfolio({ compact = false, limit }: PortfolioProps) {
+  const projects = limit ? PROJECTS.slice(0, limit) : PROJECTS;
+
   return (
     <section id="portfolio" className="relative py-20 lg:py-28">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
@@ -73,15 +31,15 @@ export default function Portfolio() {
             <span className="text-gradient-primary"> وحقّقت نمواً</span>
           </h2>
           <p className="mt-5 text-base lg:text-lg text-muted-foreground leading-relaxed">
-            نفتخر بكل مشروع أنجزناه. هذه نماذج مختارة من منتجات نفذناها لعملاء حول العالم،
+            نفتخر بكل مشروع أنجزناه. هذه نماذج مختارة من منتجات نفذناها لعملاء في مصر والخليج،
             بأرقام تتحدث عن نفسها.
           </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-5 lg:gap-6">
-          {PROJECTS.map((p, i) => (
+          {projects.map((p, i) => (
             <motion.div
-              key={p.name}
+              key={p.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -120,6 +78,12 @@ export default function Portfolio() {
                       </div>
                     </div>
                   </div>
+
+                  {p.featured && (
+                    <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-lg">
+                      مميّز
+                    </div>
+                  )}
                 </div>
 
                 {/* Body */}
@@ -131,12 +95,26 @@ export default function Portfolio() {
                       </span>
                       <h3 className="text-xl font-bold mt-0.5">{p.name}</h3>
                     </div>
-                    <ArrowUpLeft className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-all" />
+                    <Link href={`/portfolio#${p.id}`} className="text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-all">
+                      <ArrowUpLeft className="h-5 w-5" />
+                    </Link>
                   </div>
 
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3">
                     {p.desc}
                   </p>
+
+                  {/* Client info */}
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {p.client}
+                    </span>
+                    <span>·</span>
+                    <span>{p.year}</span>
+                    <span>·</span>
+                    <span>{p.duration}</span>
+                  </div>
 
                   {/* Metrics */}
                   <div className="grid grid-cols-3 gap-3 mb-5">
@@ -162,6 +140,18 @@ export default function Portfolio() {
             </motion.div>
           ))}
         </div>
+
+        {compact && (
+          <div className="mt-12 text-center">
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-primary/30 hover:text-primary font-semibold text-sm transition-colors"
+            >
+              عرض كل الأعمال
+              <ArrowUpLeft className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
