@@ -3,6 +3,7 @@ import { Cairo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -44,7 +45,9 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-sans`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Toaster />
         <SonnerToaster position="top-center" richColors closeButton dir="rtl" />
       </body>

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 // ============================================================
 // POST /api/contact
-// استقبال طلبات التواصل من النموذج
-// في الإنتاج: اربط هذا الـ endpoint بقاعدة بيانات (Prisma)
-// أو خدمة بريد مثل Resend / Nodemailer
+// استقبال طلبات التواصل وحفظها في قاعدة البيانات
 // ============================================================
 
 interface ContactPayload {
@@ -22,14 +23,18 @@ function validateEmail(email: string): boolean {
 }
 
 function validateEgyptianPhone(phone: string): boolean {
-  // Egyptian mobile: +20 10/11/12/15 + 8 digits
   const cleaned = phone.replace(/[\s-]/g, "");
   return /^(\+20|0)?1[0-25]\d{8}$/.test(cleaned);
+}
+
+function generateRequestId(): string {
+  return `NXS-${Date.now().toString(36).toUpperCase()}`;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ContactPayload;
+    const session = await getServerSession(authOptions);
 
     // Validation
     const errors: string[] = [];
@@ -58,47 +63,56 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ============================================================
-    // TODO (Production): حفظ في قاعدة البيانات + إرسال بريد
-    // ============================================================
-    // مثال:
-    // import { db } from '@/lib/db';
-    // await db.contactRequest.create({
-    //   data: {
-    //     name: body.name,
-    //     email: body.email,
-    //     phone: body.phone,
-    //     company: body.company,
-    //     budget: body.budget,
-    //     service: body.service,
-    //     message: body.message,
-    //     status: 'new',
-    //   }
-    // });
-    //
-    // await sendEmail({
-    //   to: 'hello@nexusdev.eg',
-    //   subject: `طلب جديد من ${body.name}`,
-    //   body: `...`,
-    // });
+    // Generate unique request ID
+    const requestId = generateRequestId();
 
-    // Simulate processing delay
-    await new Promise((r) => setTimeout(r, 600));
+    // Create contact request in DB
+    const contactRequest = await db.contactRequest.create({
+      data: {
+        requestId,
+        name: body.name.trim(),
+        email: body.email.toLowerCase(),
+        phone: body.phone || null,
+        company: body.company || null,
+        budget: body.budget || null,
+        service: body.service || null,
+        message: body.message.trim(),
+        status: "new",
+        priority: "normal",
+        userId: session?.user?.id || null,
+      },
+    });
 
-    // Log for development (remove in production)
-    console.log("[Contact] New request received:", {
+    // Notify all admins
+    const admins = await db.user.findMany({ where: { role: "admin" } });
+    for (const admin of admins) {
+      await db.notification.create({
+        data: {
+          userId: admin.id,
+          type: "request",
+          title: "طلب تواصل جديد",
+          body: `${body.name} - ${body.service || "استشارة"}: ${body.message.slice(0, 80)}`,
+          link: `/admin/requests`,
+        },
+      });
+    }
+
+    // Log for development
+    console.log("[Contact] New request saved:", {
+      requestId,
       name: body.name,
       email: body.email,
       phone: body.phone,
       service: body.service,
       budget: body.budget,
+      dbId: contactRequest.id,
       timestamp: new Date().toISOString(),
     });
 
     return NextResponse.json({
       success: true,
       message: "تم استلام طلبك بنجاح! سنتواصل معك خلال 24 ساعة.",
-      requestId: `NXS-${Date.now().toString(36).toUpperCase()}`,
+      requestId,
     });
   } catch (error) {
     console.error("[Contact API] Error:", error);
