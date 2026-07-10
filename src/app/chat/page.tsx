@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Send, ArrowUpLeft, Plus, X, ChevronLeft,
-  Circle, Loader2, CheckCheck, AlertCircle,
+  Circle, Loader2, CheckCheck, Check, AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export default function ChatPage() {
     startConversation,
     startTyping,
     stopTyping,
+    closeConversationAction,
   } = useChat();
 
   const [input, setInput] = useState("");
@@ -248,14 +249,30 @@ export default function ChatPage() {
                       </p>
                     </div>
                   </div>
-                  <span className={cn(
-                    "text-[10px] px-2.5 py-1 rounded-full",
-                    activeConv.status === "open" ? "bg-emerald-500/10 text-emerald-400" :
-                    activeConv.status === "pending" ? "bg-amber-500/10 text-amber-400" :
-                    "bg-muted text-muted-foreground"
-                  )}>
-                    {activeConv.status === "open" ? "مفتوحة" : activeConv.status === "pending" ? "قيد المعالجة" : "مغلقة"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "text-[10px] px-2.5 py-1 rounded-full",
+                      activeConv.status === "open" ? "bg-emerald-500/10 text-emerald-400" :
+                      activeConv.status === "pending" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-muted text-muted-foreground"
+                    )}>
+                      {activeConv.status === "open" ? "مفتوحة" : activeConv.status === "pending" ? "قيد المعالجة" : "مغلقة"}
+                    </span>
+                    {activeConv.status === "open" && (
+                      <button
+                        onClick={async () => {
+                          if (confirm("هل تريد إغلاق هذه المحادثة؟")) {
+                            const ok = await closeConversationAction();
+                            if (ok) toast.success("تم إغلاق المحادثة");
+                          }
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                        title="إغلاق المحادثة"
+                      >
+                        ✕ إغلاق
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Messages */}
@@ -276,8 +293,13 @@ export default function ChatPage() {
                             <span>{new Date(msg.createdAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}</span>
                             {isMine && (msg.failed ? (
                               <AlertCircle className="h-3 w-3 text-red-400" />
+                            ) : msg.isRead ? (
+                              <span className="flex items-center gap-0.5">
+                                <CheckCheck className="h-3 w-3" />
+                                <span>مقروء</span>
+                              </span>
                             ) : (
-                              <CheckCheck className="h-3 w-3" />
+                              <Check className="h-3 w-3" />
                             ))}
                           </div>
                         </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams, notFound, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -16,6 +17,8 @@ import { toast } from "sonner";
 
 export default function TemplateDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { data: session } = useSession();
   const template = TEMPLATES.find((t) => t.id === params.id);
 
   const [purchasing, setPurchasing] = useState(false);
@@ -26,6 +29,59 @@ export default function TemplateDetailPage() {
   }
 
   const handlePurchase = async () => {
+    setPurchasing(true);
+
+    // If user is logged in, create a conversation about this template
+    if (session?.user) {
+      try {
+        const subject = `شراء قالب: ${template.name}`;
+        const initialMessage = `🛒 طلب شراء قالب
+
+📦 القالب: ${template.name}
+🏷️ النوع: ${template.categoryLabel}
+💰 السعر: ${formatEGP(template.price)} ج.م${template.oldPrice ? ` (بدلاً من ${formatEGP(template.oldPrice)} ج.م)` : ""}
+📝 الوصف: ${template.tag}
+
+أرغب في إتمام شراء هذا القالب. كيف يمكنني الدفع واستلامه؟`;
+
+        const res = await fetch("/api/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subject,
+            type: "support",
+            initialMessage,
+          }),
+        });
+        const data = await res.json();
+        setPurchasing(false);
+        if (data.success) {
+          setPurchased(true);
+          toast.success("تم بدء محادثة الشراء! 🎉", {
+            description: "تابع المحادثة لإتمام الدفع واستلام القالب.",
+          });
+          // Redirect to chat after a moment
+          setTimeout(() => router.push("/chat"), 1500);
+          return;
+        }
+      } catch (err) {
+        setPurchasing(false);
+        toast.error("تعذّر بدء المحادثة", {
+          description: "حاول مرة أخرى أو تواصل معنا مباشرة.",
+        });
+        return;
+      }
+    }
+
+    // Not logged in — redirect to login
+    setPurchasing(false);
+    toast.info("سجّل دخولك أولاً", {
+      description: "يجب تسجيل الدخول لشراء قالب ومتابعة الطلب.",
+    });
+    setTimeout(() => router.push(`/login?callbackUrl=/templates/${template.id}`), 1200);
+  };
+
+  const handlePurchaseLegacy = async () => {
     setPurchasing(true);
     await new Promise((r) => setTimeout(r, 1600));
     setPurchasing(false);

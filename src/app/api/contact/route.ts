@@ -31,6 +31,30 @@ function generateRequestId(): string {
   return `NXS-${Date.now().toString(36).toUpperCase()}`;
 }
 
+function getServiceLabel(service: string | null): string {
+  const labels: Record<string, string> = {
+    web: "تطوير ويب",
+    mobile: "تطبيق موبايل",
+    ecommerce: "متجر إلكتروني",
+    devops: "DevOps",
+    design: "تصميم UI/UX",
+    security: "تدقيق أمني",
+    template: "شراء قالب",
+    other: "استشارة",
+  };
+  return service ? labels[service] || service : "استشارة";
+}
+
+function getBudgetLabel(budget: string): string {
+  const labels: Record<string, string> = {
+    lt60k: "أقل من 60,000 ج.م",
+    "60-150k": "60,000 - 150,000 ج.م",
+    "150-500k": "150,000 - 500,000 ج.م",
+    gt500k: "أكثر من 500,000 ج.م",
+  };
+  return labels[budget] || budget;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ContactPayload;
@@ -109,10 +133,71 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
+    // ============================================================
+    // Logical Integration: إذا كان المستخدم مسجّلاً، أنشئ محادثة تلقائياً
+    // ============================================================
+    let conversationId: string | null = null;
+    if (session?.user?.id) {
+      try {
+        const subject = body.service
+          ? `طلب: ${getServiceLabel(body.service)}`
+          : "طلب استشارة";
+
+        const initialMessage = `📋 طلب تواصل جديد من ${body.name}
+
+${body.message}
+
+${body.budget ? `💰 الميزانية: ${getBudgetLabel(body.budget)}\n` : ""}${body.company ? `🏢 الشركة: ${body.company}\n` : ""}
+🔢 رقم الطلب: ${requestId}
+
+فريق نكسوس ديف سيتواصل معك قريباً!`;
+
+        const conv = await db.$transaction(async (tx) => {
+          const c = await tx.conversation.create({
+            data: {
+              userId: session.user.id,
+              subject,
+              type: body.service === "support" ? "support" : "consultation",
+              status: "open",
+              lastMessage: initialMessage,
+              lastMessageAt: new Date(),
+            },
+          });
+
+          // Link the contact request to the conversation
+          await tx.contactRequest.update({
+            where: { id: contactRequest.id },
+            data: { conversationId: c.id, status: "contacted" },
+          });
+
+          // First message from user
+          await tx.message.create({
+            data: {
+              conversationId: c.id,
+              senderId: session.user.id,
+              content: initialMessage,
+              type: "text",
+            },
+          });
+
+          return c;
+        });
+
+        conversationId = conv.id;
+        console.log("[Contact] Auto-created conversation:", conversationId);
+      } catch (err) {
+        console.error("[Contact] Failed to auto-create conversation:", err);
+        // Non-fatal — the request is still saved
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: "تم استلام طلبك بنجاح! سنتواصل معك خلال 24 ساعة.",
+      message: session?.user
+        ? "تم استلام طلبك وبدأت محادثة مع فريقنا! تابعها في صفحة المحادثات."
+        : "تم استلام طلبك بنجاح! سنتواصل معك خلال 24 ساعة.",
       requestId,
+      conversationId,
     });
   } catch (error) {
     console.error("[Contact API] Error:", error);

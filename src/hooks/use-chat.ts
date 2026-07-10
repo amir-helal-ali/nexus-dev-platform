@@ -506,6 +506,52 @@ export function useChat() {
     });
   }, [activeConversationId, session]);
 
+  // ============================================================
+  // 9) Close / Reopen conversation
+  // ============================================================
+  const closeConversationAction = useCallback(async () => {
+    if (!activeConversationId) return null;
+    try {
+      const res = await fetch(`/api/conversations/${activeConversationId}/close`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Update local state
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeConversationId ? { ...c, status: "closed" } : c
+          )
+        );
+        return true;
+      }
+    } catch (err) {
+      console.error("[Chat] Failed to close conversation:", err);
+    }
+    return false;
+  }, [activeConversationId]);
+
+  const reopenConversationAction = useCallback(async () => {
+    if (!activeConversationId) return null;
+    try {
+      const res = await fetch(`/api/conversations/${activeConversationId}/reopen`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeConversationId ? { ...c, status: "open" } : c
+          )
+        );
+        return true;
+      }
+    } catch (err) {
+      console.error("[Chat] Failed to reopen conversation:", err);
+    }
+    return false;
+  }, [activeConversationId]);
+
   return {
     // Connection states
     isConnected, // WebSocket (typing/presence)
@@ -525,5 +571,7 @@ export function useChat() {
     startTyping,
     stopTyping,
     loadConversations,
+    closeConversationAction,
+    reopenConversationAction,
   };
 }

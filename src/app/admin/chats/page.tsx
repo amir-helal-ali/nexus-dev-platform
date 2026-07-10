@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Send, Search, Circle, Loader2,
-  CheckCheck, ChevronLeft, User,
+  CheckCheck, ChevronLeft, User, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChat, type Conversation } from "@/hooks/use-chat";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   open: { label: "مفتوحة", color: "bg-emerald-500/10 text-emerald-400" },
@@ -30,17 +31,31 @@ export default function AdminChatsPage() {
     sendMessage,
     startTyping,
     stopTyping,
+    closeConversationAction,
+    reopenConversationAction,
   } = useChat();
 
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "closed">("all");
+  const [quickReplies, setQuickReplies] = useState<Array<{ id: string; title: string; content: string; category: string }>>([]);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
+
+  // Load quick replies once
+  useEffect(() => {
+    fetch("/api/conversations/quick-replies")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setQuickReplies(data.replies);
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredConversations = conversations.filter((c) => {
     if (filter !== "all" && c.status !== filter) return false;
@@ -219,6 +234,29 @@ export default function AdminChatsPage() {
                   <span className={cn("text-[10px] px-2.5 py-1 rounded-full", STATUS_LABELS[activeConv.status]?.color)}>
                     {STATUS_LABELS[activeConv.status]?.label}
                   </span>
+                  {activeConv.status === "open" ? (
+                    <button
+                      onClick={async () => {
+                        if (confirm("إغلاق هذه المحادثة؟")) {
+                          const ok = await closeConversationAction();
+                          if (ok) toast.success("تم إغلاق المحادثة");
+                        }
+                      }}
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                    >
+                      ✕ إغلاق
+                    </button>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        const ok = await reopenConversationAction();
+                        if (ok) toast.success("تمت إعادة فتح المحادثة");
+                      }}
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      ↻ إعادة فتح
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -260,7 +298,48 @@ export default function AdminChatsPage() {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Quick replies dropdown */}
+              <AnimatePresence>
+                {showQuickReplies && quickReplies.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="border-t border-white/8 overflow-y-auto max-h-48 p-2"
+                  >
+                    <div className="text-[10px] font-semibold text-muted-foreground mb-2 px-2">ردود سريعة</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {quickReplies.map((qr) => (
+                        <button
+                          key={qr.id}
+                          type="button"
+                          onClick={() => {
+                            setInput(qr.content);
+                            setShowQuickReplies(false);
+                          }}
+                          className="text-right p-2 rounded-lg bg-white/5 hover:bg-white/8 border border-white/8 hover:border-primary/30 transition-colors"
+                        >
+                          <div className="text-xs font-semibold">{qr.title}</div>
+                          <div className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{qr.content}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <form onSubmit={handleSend} className="p-3 border-t border-white/8 flex gap-2">
+                {quickReplies.length > 0 && activeConv.status === "open" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowQuickReplies(!showQuickReplies)}
+                    className="bg-white/5 border-white/10 rounded-xl h-11 px-3"
+                    title="ردود سريعة"
+                  >
+                    <Zap className="h-4 w-4 text-amber-400" />
+                  </Button>
+                )}
                 <Input
                   value={input}
                   onChange={handleInputChange}
