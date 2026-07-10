@@ -3,16 +3,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Terminal, ArrowUpLeft, Phone } from "lucide-react";
+import { Menu, X, Terminal, ArrowUpLeft, Phone, MessageSquare, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS, COMPANY } from "@/lib/data/content";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [userMenu, setUserMenu] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const { unreadCount, connected: notifConnected } = useNotifications();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -93,16 +98,98 @@ export default function Navbar() {
               <Phone className="h-3.5 w-3.5" />
               {COMPANY.phoneEG}
             </a>
-            <Button
-              asChild
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-1.5 shadow-lg shadow-primary/20"
-            >
-              <Link href="/contact">
-                ابدأ مشروعك
-                <ArrowUpLeft className="h-4 w-4" />
+
+            {/* Chat icon with unread badge (if logged in) */}
+            {session?.user && (
+              <Link
+                href={session.user.role === "admin" ? "/admin/chats" : "/chat"}
+                className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
+                title="المحادثات"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {unreadCount.messages > 0 && (
+                  <span className="absolute -top-0.5 -left-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                    {unreadCount.messages > 9 ? "9+" : unreadCount.messages}
+                  </span>
+                )}
+                {notifConnected && (
+                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                )}
               </Link>
-            </Button>
+            )}
+
+            {/* Auth area */}
+            {session?.user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenu(!userMenu)}
+                  className="flex items-center gap-2 p-1 pr-3 rounded-xl hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 border border-primary/20 font-bold text-primary text-xs">
+                    {session.user.name.charAt(0)}
+                  </div>
+                  <span className="text-sm font-semibold">{session.user.name.split(" ")[0]}</span>
+                </button>
+                <AnimatePresence>
+                  {userMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute left-0 mt-2 w-48 glass-strong rounded-xl overflow-hidden shadow-2xl z-50"
+                    >
+                      <div className="p-3 border-b border-white/8">
+                        <div className="text-sm font-bold">{session.user.name}</div>
+                        <div className="text-xs text-muted-foreground truncate" dir="ltr">{session.user.email}</div>
+                      </div>
+                      <div className="p-1.5">
+                        <Link
+                          href="/chat"
+                          onClick={() => setUserMenu(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          محادثاتي
+                          {unreadCount.messages > 0 && (
+                            <span className="mr-auto px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                              {unreadCount.messages}
+                            </span>
+                          )}
+                        </Link>
+                        {session.user.role === "admin" && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setUserMenu(false)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors"
+                          >
+                            <UserIcon className="h-4 w-4" />
+                            لوحة الإدارة
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => signOut({ callbackUrl: "/" })}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors text-red-400"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          تسجيل الخروج
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Button
+                asChild
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl gap-1.5 shadow-lg shadow-primary/20"
+              >
+                <Link href="/login">
+                  تسجيل الدخول
+                  <ArrowUpLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile toggle */}

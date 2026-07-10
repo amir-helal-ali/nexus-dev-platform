@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Terminal, LayoutDashboard, MessageSquare, Inbox, Users,
-  LogOut, Menu, X, Bell, Search,
+  LogOut, Menu, X, Bell, Search, Circle,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ interface AdminShellProps {
 
 const NAV = [
   { label: "لوحة التحكم", href: "/admin", icon: LayoutDashboard },
-  { label: "المحادثات", href: "/admin/chats", icon: MessageSquare },
+  { label: "المحادثات", href: "/admin/chats", icon: MessageSquare, badge: true },
   { label: "طلبات التواصل", href: "/admin/requests", icon: Inbox },
   { label: "المستخدمون", href: "/admin/users", icon: Users },
 ];
@@ -26,6 +27,15 @@ const NAV = [
 export default function AdminShell({ children, user }: AdminShellProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const { notifications, unreadCount, connected, markAllAsRead } = useNotifications();
+
+  // Close notif dropdown on route change
+  useEffect(() => {
+    if (!notifOpen) return;
+    const t = setTimeout(() => setNotifOpen(false), 0);
+    return () => clearTimeout(t);
+  }, [pathname, notifOpen]);
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
@@ -60,6 +70,11 @@ export default function AdminShell({ children, user }: AdminShellProps) {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.badge && unreadCount.messages > 0 && (
+                <span className="mr-auto px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  {unreadCount.messages > 9 ? "9+" : unreadCount.messages}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -160,10 +175,94 @@ export default function AdminShell({ children, user }: AdminShellProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
-            </button>
+            {/* SSE Connection indicator */}
+            <div className={cn(
+              "hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold",
+              connected ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"
+            )}>
+              <Circle className={cn("h-1.5 w-1.5 fill-current", connected && "animate-pulse")} />
+              {connected ? "متصل لحظياً" : "غير متصل"}
+            </div>
+
+            {/* Notifications dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
+                title="الإشعارات"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount.messages > 0 && (
+                  <span className="absolute -top-0.5 -left-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                    {unreadCount.messages > 9 ? "9+" : unreadCount.messages}
+                  </span>
+                )}
+              </button>
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute left-0 mt-2 w-80 glass-strong rounded-xl overflow-hidden shadow-2xl z-50"
+                  >
+                    <div className="flex items-center justify-between p-3 border-b border-white/8">
+                      <h4 className="font-bold text-sm">الإشعارات</h4>
+                      {notifications.length > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-[10px] text-primary hover:underline"
+                        >
+                          تعليم الكل كمقروء
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-muted-foreground">
+                          <Bell className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                          لا توجد إشعارات بعد
+                        </div>
+                      ) : (
+                        notifications.slice(0, 10).map((n, i) => (
+                          <Link
+                            key={n.id || i}
+                            href={n.link || "#"}
+                            onClick={() => setNotifOpen(false)}
+                            className={cn(
+                              "block p-3 border-b border-white/4 hover:bg-white/5 transition-colors",
+                              !n.isRead && "bg-primary/5"
+                            )}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className={cn(
+                                "shrink-0 h-1.5 w-1.5 rounded-full mt-1.5",
+                                n.isRead ? "bg-muted-foreground/40" : "bg-primary"
+                              )} />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold">{n.title}</div>
+                                <div className="text-xs text-muted-foreground line-clamp-2">{n.body}</div>
+                                {n.createdAt && (
+                                  <div className="text-[10px] text-muted-foreground/60 mt-1">
+                                    {new Date(n.createdAt).toLocaleString("ar-EG", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      day: "numeric",
+                                      month: "short",
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
               عرض الموقع
             </Link>
