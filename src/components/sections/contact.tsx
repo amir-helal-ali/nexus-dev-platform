@@ -22,14 +22,46 @@ export default function Contact({ full = false }: ContactProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setSubmitting(false);
-    setDone(true);
-    toast.success("تم استلام رسالتك! سنردّ عليك خلال 24 ساعة.", {
-      description: "فريق نكسوس ديف يقدّر ثقتك.",
-    });
-    (e.target as HTMLFormElement).reset();
-    setTimeout(() => setDone(false), 5000);
+
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      company: formData.get("company") as string,
+      budget: formData.get("budget") as string,
+      service: formData.get("service") as string,
+      message: formData.get("message") as string,
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      setSubmitting(false);
+
+      if (!res.ok || !data.success) {
+        const errMsg = data.errors?.[0] || data.message || "حدث خطأ أثناء الإرسال";
+        toast.error("تعذّر إرسال الطلب", { description: errMsg });
+        return;
+      }
+
+      setDone(true);
+      toast.success("تم استلام طلبك بنجاح! 🎉", {
+        description: `رقم الطلب: ${data.requestId} — سنردّ خلال 24 ساعة.`,
+      });
+      (e.target as HTMLFormElement).reset();
+      setTimeout(() => setDone(false), 6000);
+    } catch (err) {
+      setSubmitting(false);
+      toast.error("تعذّر الاتصال بالخادم", {
+        description: "تحقّق من الإنترنت أو راسلنا على واتساب مباشرة.",
+      });
+    }
   };
 
   return (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -45,6 +46,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
+        <SonnerToaster position="top-center" richColors closeButton dir="rtl" />
       </body>
     </html>
   );

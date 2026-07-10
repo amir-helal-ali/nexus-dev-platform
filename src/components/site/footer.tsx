@@ -29,8 +29,16 @@ const FOOTER_EXTRA_LINKS = [
     links: [
       { label: "من نحن", href: "/about" },
       { label: "أعمالنا", href: "/portfolio" },
+      { label: "المدوّنة", href: "/blog" },
       { label: "تواصل معنا", href: "/contact" },
-      { label: "الرئيسية", href: "/" },
+    ],
+  },
+  {
+    title: "قانوني",
+    links: [
+      { label: "سياسة الخصوصية", href: "/privacy" },
+      { label: "شروط الخدمة", href: "/terms" },
+      { label: "سياسة الاسترجاع", href: "/refund" },
     ],
   },
 ];
@@ -89,7 +97,7 @@ export default function Footer() {
           </div>
 
           {/* Links */}
-          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
+          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-4 gap-6">
             {FOOTER_EXTRA_LINKS.map((col) => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold uppercase tracking-widest text-foreground mb-4">
